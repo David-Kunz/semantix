@@ -1,0 +1,39 @@
+{
+  "definitions": {
+    "Books": {
+      "kind": "entity",
+      "elements": {
+        "ID": {
+          "key": true,
+          "type": "cds.Integer"
+        },
+        "title": {
+          "type": "cds.String"
+        },
+        "author_ID": {
+          "type": "cds.Integer"
+        }
+      }
+    },
+    "Authors": {
+      "kind": "entity",
+      "elements": {
+        "ID": {
+          "key": true,
+          "type": "cds.Integer"
+        },
+        "firstName": {
+          "type": "cds.String"
+        },
+        "lastName": {
+          "type": "cds.String"
+        }
+      }
+    }
+  },
+  "meta": {
+    "creator": "CDS Compiler v2.11.2",
+    "flavor": "inferred"
+  },
+  "$version": "2.0"
+}
