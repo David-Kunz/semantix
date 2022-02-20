@@ -1,6 +1,6 @@
 [package]
 name = "semantix"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Dr. David Alexander Kunz <kunz.david.alexander@gmail.com>"]
 license = "MIT"
