@@ -4,6 +4,7 @@ version = "0.2.1"
 edition = "2021"
 authors = ["Dr. David Alexander Kunz <kunz.david.alexander@gmail.com>"]
 license = "MIT"
+description = "Types for Parsing CDS Files"
 
 
 
