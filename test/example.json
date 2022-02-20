@@ -8,6 +8,10 @@
           "type": "cds.Integer"
         },
         "title": {
+          "@myCustomAnnotation": "foo",
+          "@myOtherCustomAnnotation": [
+            "bar"
+          ],
           "type": "cds.String"
         },
         "author_ID": {
