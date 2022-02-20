@@ -2,7 +2,8 @@ type PagesType: cds.Integer;
 
 entity Books {
   key ID: Integer;
-  @myAnnotation: 'foo'
+  @myCustomAnnotation: 'foo'
+  @myOtherCustomAnnotation: ['bar']
   title: String;
   author_ID: Integer;
   @anotherAnno: 'bar'

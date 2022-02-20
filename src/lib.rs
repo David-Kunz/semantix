@@ -2,6 +2,7 @@ use serde::{
     de::{self, Visitor},
     Deserialize,
 };
+use serde_json::Value;
 use std::{collections::HashMap, io, path::Path};
 
 #[derive(Deserialize, Debug)]
@@ -22,12 +23,53 @@ pub struct Entity {
     pub elements: HashMap<String, Element>,
 }
 
-#[derive(Debug)]
+struct ElementVisitor {}
+
+impl<'de> Visitor<'de> for ElementVisitor {
+    type Value = Element;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("Could not deserialize element")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut element = Element {
+            ..Default::default()
+        };
+
+        while let Some(key) = map.next_key::<String>()? {
+            if key.starts_with('@') {
+                element.annotations.insert(key, map.next_value()?);
+            } else {
+                match key.as_str() {
+                    "type" => {
+                        element.element_type = map.next_value()?;
+                    }
+                    "key" => {
+                        element.key = map.next_value()?;
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        if element.element_type.is_empty() {
+            return Err(de::Error::missing_field("type"));
+        }
+
+        Ok(element)
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Element {
     pub key: bool,
     pub element_type: String,
-    pub annotations: HashMap<String, serde_json::value::Value>,
-}
+    pub annotations: HashMap<String, Value>,
+
 
 struct ElementVisitor {}
 
