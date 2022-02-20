@@ -1,4 +1,7 @@
-use serde::Deserialize;
+use serde::{
+    de::{self, Visitor},
+    Deserialize,
+};
 use std::{collections::HashMap, io, path::Path};
 
 #[derive(Deserialize, Debug)]
@@ -11,6 +14,7 @@ pub struct Model {
 #[serde(rename_all = "camelCase")]
 pub enum Definition {
     Entity(Entity),
+    Type(Element),
 }
 
 #[derive(Deserialize, Debug)]
@@ -18,12 +22,60 @@ pub struct Entity {
     pub elements: HashMap<String, Element>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug)]
 pub struct Element {
-    #[serde(default)]
     pub key: bool,
-    #[serde(rename(deserialize = "type"))]
     pub element_type: String,
+    pub annotations: HashMap<String, serde_json::value::Value>,
+}
+
+struct ElementVisitor {}
+
+impl<'de> Visitor<'de> for ElementVisitor {
+    type Value = Element;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("Could not deserialize element")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut res = Element {
+            key: false,
+            element_type: "".into(),
+            annotations: HashMap::new(),
+        };
+        while let Some(key) = map.next_key::<String>()? {
+            if key.starts_with('@') {
+                res.annotations.insert(key, map.next_value()?);
+            } else {
+                match key.as_str() {
+                    "type" => {
+                        res.element_type = map.next_value()?;
+                    }
+                    "key" => {
+                        res.key = map.next_value()?;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if res.element_type.is_empty() {
+            return Err(de::Error::missing_field("type"));
+        }
+        Ok(res)
+    }
+}
+
+impl<'de> Deserialize<'de> for Element {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(ElementVisitor {})
+    }
 }
 
 #[derive(Debug)]
