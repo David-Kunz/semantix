@@ -1,5 +1,9 @@
 {
   "definitions": {
+    "PagesType": {
+      "kind": "type",
+      "type": "cds.Integer"
+    },
     "Books": {
       "kind": "entity",
       "elements": {
@@ -16,6 +20,14 @@
         },
         "author_ID": {
           "type": "cds.Integer"
+        },
+        "pages": {
+          "@anotherAnno": "bar",
+          "@myArrayAnnotation": [
+            "first",
+            "second"
+          ],
+          "type": "PagesType"
         }
       }
     },

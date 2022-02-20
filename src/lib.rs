@@ -15,6 +15,7 @@ pub struct Model {
 #[serde(rename_all = "camelCase")]
 pub enum Definition {
     Entity(Entity),
+    Type(Element),
 }
 
 #[derive(Deserialize, Debug)]
@@ -68,6 +69,46 @@ pub struct Element {
     pub key: bool,
     pub element_type: String,
     pub annotations: HashMap<String, Value>,
+
+
+struct ElementVisitor {}
+
+impl<'de> Visitor<'de> for ElementVisitor {
+    type Value = Element;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("Could not deserialize element")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut res = Element {
+            key: false,
+            element_type: "".into(),
+            annotations: HashMap::new(),
+        };
+        while let Some(key) = map.next_key::<String>()? {
+            if key.starts_with('@') {
+                res.annotations.insert(key, map.next_value()?);
+            } else {
+                match key.as_str() {
+                    "type" => {
+                        res.element_type = map.next_value()?;
+                    }
+                    "key" => {
+                        res.key = map.next_value()?;
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if res.element_type.is_empty() {
+            return Err(de::Error::missing_field("type"));
+        }
+        Ok(res)
+    }
 }
 
 impl<'de> Deserialize<'de> for Element {
